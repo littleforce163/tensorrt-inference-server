@@ -153,13 +153,7 @@ for model_trial in v 0 1 2 4; do
         [[ "$model_trial" != "v" ]] && export BATCHER_TYPE="FIXED"
 
     for i in \
-            test_simple_sequence \
-            test_length1_sequence \
-            test_batch_size \
-            test_no_sequence_start \
-            test_no_sequence_start2 \
-            test_no_sequence_end \
-            test_no_correlation_id ; do
+ ; do
         SERVER_ARGS="--model-repository=`pwd`/$MODEL_DIR"
         SERVER_LOG="./$i.$MODEL_DIR.serverlog"
         run_server
@@ -187,16 +181,8 @@ for model_trial in v 0 1 2 4; do
     # Tests that require TRTSERVER_DELAY_SCHEDULER so that the
     # scheduler is delayed and requests can collect in the queue.
     for i in \
-            test_backlog_fill \
-            test_backlog_fill_no_end \
-            test_backlog_same_correlation_id \
-            test_backlog_same_correlation_id_no_end \
-            test_backlog_sequence_timeout \
-            test_half_batch \
-            test_skip_batch \
-            test_full_batch \
             test_ragged_batch \
-            test_backlog ; do
+             ; do
         export TRTSERVER_BACKLOG_DELAY_SCHEDULER=3 &&
             [[ "$i" != "test_backlog_fill_no_end" ]] && export TRTSERVER_BACKLOG_DELAY_SCHEDULER=2 &&
             [[ "$i" != "test_backlog_fill" ]] &&
@@ -207,7 +193,7 @@ for model_trial in v 0 1 2 4; do
             [[ "$i" != "test_backlog_same_correlation_id_no_end" ]] && export TRTSERVER_DELAY_SCHEDULER=8 &&
             [[ "$i" != "test_half_batch" ]] && export TRTSERVER_DELAY_SCHEDULER=4 &&
             [[ "$i" != "test_backlog_sequence_timeout" ]] && export TRTSERVER_DELAY_SCHEDULER=12
-        SERVER_ARGS="--model-repository=`pwd`/$MODEL_DIR"
+        SERVER_ARGS="--log-verbose=1 --model-repository=`pwd`/$MODEL_DIR"
         SERVER_LOG="./$i.$MODEL_DIR.serverlog"
         run_server
         if [ "$SERVER_PID" == "0" ]; then
@@ -223,6 +209,9 @@ for model_trial in v 0 1 2 4; do
         if [ $? -ne 0 ]; then
             echo -e "\n***\n*** Test $i Failed\n***" >>$CLIENT_LOG
             echo -e "\n***\n*** Test $i Failed\n***"
+            cat $CLIENT_LOG
+            echo -e "\n***\n*** SERVER\n***"
+            cat ./$i.$MODEL_DIR.serverlog
             RET=1
         fi
         set -e
